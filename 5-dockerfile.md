@@ -51,16 +51,36 @@ La opción -t se utiliza para etiquetar la imagen que se está construyendo con 
  
 ### Ejecutar el archivo Dockerfile y construir una imagen en la versión 1.0
 ```
-
+docker build -t myapp:1.0 .
 ```
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/a1516ba9-cd9a-4dc7-bc68-dad4640bbec0)
+
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/3a9cad9c-4c6e-47aa-816b-d137a720bafc)
 
 **¿Cuántos pasos se han ejecutado?**
 
+El Dockerfile proporcionado consta de 6 pasos principales:
+```
+FROM centos:7
+RUN yum -y update
+RUN yum -y install httpd
+COPY ./web /var/www/html
+EXPOSE 80
+CMD ["apachectl", "-D", "FOREGROUND"]
+```
+
 ### Inspeccionar la imagen creada
-# COMPLETAR CON UNA CAPTURA
+```
+docker inspect myapp:1.0
+```
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/78969d92-f032-4a62-9a89-74937c380ec7)
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/0bb2857c-a16d-4bbc-ae19-19c10647ba8b)
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/c50f9146-d3a9-4d4d-9e49-a67b5f427432)
 
 **Modificar el archivo index.html para incluir su nombre**
 **¿Cuántos pasos se han ejecutado? ¿Observa algo diferente en la creación de la imagen**
+
+Después de modificar el archivo index.html y volver a construir la imagen, Docker reutilizará las capas que no han cambiado. Solo el paso de COPY ./web /var/www/html debería volver a ejecutarse, lo que demuestra el mecanismo de caché.
 
 ## Mecanismo de caché
 Docker usa un mecanismo de caché cuando crea imágenes para acelerar el proceso de construcción y evitar la repetición de pasos que no han cambiado. Cada instrucción en un Dockerfile crea una capa en la imagen final. Docker intenta reutilizar las capas de una construcción anterior si no han cambiado, lo que reduce significativamente el tiempo de construcción.
@@ -71,33 +91,42 @@ Docker usa un mecanismo de caché cuando crea imágenes para acelerar el proceso
 ![mapeo](imagenes/dockerfile-cache.PNG)
 
 ### Crear un contenedor a partir de las imagen creada, mapear todos los puertos
+Para crear un contenedor y mapear el puerto 80 del host al puerto 80 del contenedor, usa el siguiente comando:
 ```
-
+docker run -d -p 80:80 myapp:1.0
 ```
 
 ### ¿Con que puerto host se está realizando el mapeo?
-# COMPLETAR CON LA RESPUESTA
+Se está mapeando el puerto 80 del host al puerto 80 del contenedor.
 
 **¿Qué es una imagen huérfana?**
-# COMPLETAR CON LA RESPUESTA
+Una imagen huérfana es una imagen que no tiene ningún contenedor asociado, es decir, no hay contenedores creados a partir de esa imagen.
 
 ### Identificar imágenes huérfanas
 ```
-
+docker images -f "dangling=true"
 ```
 
 ### Listar los IDS de las imágenes huérfanas
 ```
-
+docker images -f "dangling=true" -q
 ```
+
+![image](https://github.com/MaxCar31/2024A-ISWD633-Practica4/assets/141116497/d7c5f12e-69a6-47ad-a114-7d6607a6ade9)
 
 ### Eliminar imágenes huérfanas
 ```
-
+docker rmi $(docker images -f "dangling=true" -q)
 ```
 
 ### Ejecutar un archivo Dockerfile que tiene otro nombre
+
 ```
 docker build -t <nombre imagen>:<version> -f <ruta y nommbre del Dockerfile> .
 ```
 
+Por ejemplo 
+
+```
+docker build -t myapp:1.0 -f Dockerfile-custom .
+```
